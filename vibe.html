@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Statistika</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f0f5ff;
+      min-height: 100vh;
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      height: 52px;
+      background: #fff;
+      border-bottom: 2px solid #1a56db;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(26,86,219,0.10);
+    }
+    nav a {
+      color: #1a56db;
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      transition: color 0.15s;
+    }
+    nav a:hover { color: #1e429f; }
+    nav h2 {
+      color: #1a56db;
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+    nav span { width: 80px; }
+
+    .container {
+      max-width: 780px;
+      margin: 36px auto;
+      padding: 0 18px;
+    }
+
+    /* Kirim/Chiqim qo'shish kartasi */
+    .card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 22px 24px;
+      box-shadow: 0 4px 18px rgba(26,86,219,0.10);
+      margin-bottom: 22px;
+      transition: box-shadow 0.22s;
+    }
+    .card:hover { box-shadow: 0 8px 30px rgba(26,86,219,0.16); }
+    .card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a56db;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input[type="number"] {
+      flex: 1;
+      min-width: 130px;
+      height: 40px;
+      border: 1.5px solid #c7d7fd;
+      border-radius: 9px;
+      padding: 0 14px;
+      font-size: 15px;
+      color: #0f172a;
+      background: #f0f5ff;
+      outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s, background 0.16s;
+    }
+    input[type="number"]:focus {
+      border-color: #1a56db;
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+    }
+    select {
+      height: 40px;
+      border: 1.5px solid #c7d7fd;
+      border-radius: 9px;
+      padding: 0 12px;
+      font-size: 14px;
+      color: #0f172a;
+      background: #f0f5ff;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+    select:focus {
+      border-color: #1a56db;
+      box-shadow: 0 0 0 3px rgba(26,86,219,0.12);
+      background: #fff;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 20px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-kirim {
+      background: #1a56db;
+      color: #fff;
+    }
+    .btn-kirim:hover {
+      background: #1e429f;
+      box-shadow: 0 4px 14px rgba(26,86,219,0.30);
+    }
+    .btn-chiqim {
+      background: #fff;
+      color: #1a56db;
+      border: 1.5px solid #c7d7fd;
+    }
+    .btn-chiqim:hover {
+      background: #e8f0fe;
+      border-color: #1a56db;
+      box-shadow: 0 4px 10px rgba(26,86,219,0.10);
+    }
+
+    /* Filter tugmalari */
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    .fbtn {
+      height: 34px;
+      padding: 0 20px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1.5px solid #c7d7fd;
+      background: #f0f5ff;
+      color: #475569;
+      transition: all 0.18s;
+    }
+    .fbtn:hover { background: #e8f0fe; color: #1a56db; }
+    .fbtn.active { background: #1a56db; color: #fff; border-color: #1a56db; box-shadow: 0 2px 8px rgba(26,86,219,0.22); }
+    .fbtn.active-k { background: #dcfce7; color: #15803d; border-color: #86efac; }
+    .fbtn.active-c { background: #fee2e2; color: #dc2626; border-color: #fca5a5; }
+
+    /* Statistika kartalar */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .scard {
+      background: #fff;
+      border-radius: 12px;
+      padding: 16px 18px;
+      box-shadow: 0 2px 10px rgba(26,86,219,0.08);
+      transition: box-shadow 0.2s, transform 0.2s;
+    }
+    .scard:hover { box-shadow: 0 6px 20px rgba(26,86,219,0.14); transform: translateY(-2px); }
+    .scard-label { font-size: 11px; font-weight: 700; color: #94a3b8; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px; }
+    .scard-val { font-size: 20px; font-weight: 700; }
+    .sv-b { color: #1a56db; }
+    .sv-g { color: #16a34a; }
+    .sv-r { color: #dc2626; }
+
+    /* Jadval (table) */
+    .table-wrap {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(26,86,219,0.10);
+      overflow: hidden;
+      transition: box-shadow 0.22s;
+    }
+    .table-wrap:hover { box-shadow: 0 8px 28px rgba(26,86,219,0.14); }
+    .table-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 12px;
+      border-bottom: 1.5px solid #e8f0fe;
+    }
+    .table-header h3 { font-size: 15px; font-weight: 700; color: #0f172a; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    thead tr {
+      background: #f0f5ff;
+    }
+    th {
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      color: #1a56db;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-bottom: 1.5px solid #e8f0fe;
+    }
+    td {
+      padding: 13px 16px;
+      font-size: 14px;
+      color: #334155;
+      border-bottom: 1px solid #f0f5ff;
+      transition: background 0.12s;
+    }
+    tr:last-child td { border-bottom: none; }
+    tbody tr {
+      transition: background 0.15s;
+    }
+    tbody tr:hover td { background: #f8faff; }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .badge-k { background: #dcfce7; color: #15803d; }
+    .badge-c { background: #fee2e2; color: #dc2626; }
+
+    .amount-k { color: #16a34a; font-weight: 700; }
+    .amount-c { color: #dc2626; font-weight: 700; }
+
+    .del-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #94a3b8;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 7px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .del-btn:hover { background: #fee2e2; color: #dc2626; }
+
+    .bo-sh {
+      text-align: center;
+      padding: 40px;
+      color: #94a3b8;
+      font-size: 14px;
+    }
+    .bo-sh svg { display: block; margin: 0 auto 10px; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #1e429f;
+      color: #fff;
+      border-radius: 10px;
+      padding: 11px 24px;
+      font-size: 14px;
+      font-weight: 500;
+      box-shadow: 0 6px 24px rgba(26,86,219,0.28);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s, transform 0.22s;
+      z-index: 999;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#">← Asosiy</a>
+  <h2>Statistika</h2>
+  <span></span>
+</nav>
+
+<div class="container">
+
+  <!-- Kirim/chiqim qo'shish -->
+  <div class="card">
+    <div class="card-title">Yozuv qo'shish</div>
+    <div class="input-row">
+      <input type="number" id="summa" placeholder="Summa" min="0" />
+      <select id="kat">
+        <option>Oziq-ovqat</option>
+        <option>Transport</option>
+        <option>Kiyim-kechak</option>
+        <option>Sog'liq</option>
+        <option>Oyin-kulgi</option>
+        <option>Ta'lim</option>
+        <option>Uy-joy</option>
+        <option>Boshqa</option>
+      </select>
+      <button class="btn btn-kirim" onclick="qosh('kirim')">+ Kirim</button>
+      <button class="btn btn-chiqim" onclick="qosh('chiqim')">− Chiqim</button>
+    </div>
+    <div class="filter-row">
+      <button class="fbtn active-k" id="fk" onclick="fil('kirim')">Kirimlar</button>
+      <button class="fbtn" id="fc" onclick="fil('chiqim')">Chiqimlar</button>
+    </div>
+  </div>
+
+  <!-- Statistika kartalar -->
+  <div class="stats-grid">
+    <div class="scard">
+      <div class="scard-label">Jami kirim</div>
+      <div class="scard-val sv-g" id="sk">0 so'm</div>
+    </div>
+    <div class="scard">
+      <div class="scard-label">Jami chiqim</div>
+      <div class="scard-val sv-r" id="sc">0 so'm</div>
+    </div>
+  </div>
+
+  <!-- Jadval -->
+  <div class="table-wrap">
+    <div class="table-header">
+      <h3>Yozuvlar</h3>
+      <span id="count" style="font-size:13px;color:#94a3b8;font-weight:600;">0 ta</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Tur</th>
+          <th>Kategoriya</th>
+          <th>Summa</th>
+          <th>Vaqt</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div class="bo-sh" id="bosh" style="display:none">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#c7d7fd" stroke-width="1.5"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 9h18"/></svg>
+      Yozuvlar yo'q
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const ikonlar = {
+    'Oziq-ovqat':'🍎','Transport':'🚌','Kiyim-kechak':'👕',
+    "Sog'liq":'💊','Oyin-kulgi':'🎮',"Ta'lim":'📚',
+    'Uy-joy':'🏠','Boshqa':'📦'
+  };
+
+  let yozuvlar = [], joriy = 'kirim', raqam = 1;
+
+  function fmt(n) {
+    return Number(n).toLocaleString('uz-UZ') + " so'm";
+  }
+
+  function qosh(tur) {
+    const v = document.getElementById('summa').value.trim();
+    const k = document.getElementById('kat').value;
+    if (!v || Number(v) <= 0) { showToast('⚠️ Summa kiriting!'); return; }
+    const d = new Date();
+    yozuvlar.unshift({
+      id: Date.now(), n: raqam++, tur, summa: Number(v), kat: k,
+      vaqt: d.toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
+    });
+    document.getElementById('summa').value = '';
+    render();
+    showToast(tur === 'kirim' ? '✅ Kirim qo\'shildi' : '✅ Chiqim qo\'shildi');
+  }
+
+  function ochir(id) {
+    yozuvlar = yozuvlar.filter(y => y.id !== id);
+    render();
+    showToast('🗑️ O\'chirildi');
+  }
+
+  function fil(f) {
+    joriy = f;
+    document.getElementById('fk').className = 'fbtn' + (f === 'kirim' ? ' active-k' : '');
+    document.getElementById('fc').className = 'fbtn' + (f === 'chiqim' ? ' active-c' : '');
+    render();
+  }
+
+  function render() {
+    const ki = yozuvlar.filter(y => y.tur === 'kirim').reduce((a, b) => a + b.summa, 0);
+    const chi = yozuvlar.filter(y => y.tur === 'chiqim').reduce((a, b) => a + b.summa, 0);
+    const bal = ki - chi;
+
+    document.getElementById('sk').textContent = fmt(ki);
+    document.getElementById('sc').textContent = fmt(chi);
+
+    const f = joriy === 'all' ? yozuvlar : yozuvlar.filter(y => y.tur === joriy);
+    document.getElementById('count').textContent = f.length + ' ta';
+
+    const tbody = document.getElementById('tbody');
+    const bosh = document.getElementById('bosh');
+
+    if (!f.length) {
+      tbody.innerHTML = '';
+      bosh.style.display = 'block';
+      return;
+    }
+    bosh.style.display = 'none';
+    tbody.innerHTML = f.map((y, i) => `
+      <tr style="animation: kirish 0.2s ease both; animation-delay:${i * 0.04}s">
+        <td style="color:#94a3b8;font-size:13px">${y.n}</td>
+        <td><span class="badge ${y.tur === 'kirim' ? 'badge-k' : 'badge-c'}">${y.tur === 'kirim' ? '↑ Kirim' : '↓ Chiqim'}</span></td>
+        <td>${ikonlar[y.kat] || '📦'} ${y.kat}</td>
+        <td class="${y.tur === 'kirim' ? 'amount-k' : 'amount-c'}">${y.tur === 'kirim' ? '+' : '-'}${fmt(y.summa)}</td>
+        <td style="color:#94a3b8;font-size:13px">${y.vaqt}</td>
+        <td><button class="del-btn" onclick="ochir(${y.id})" title="O'chirish">✕</button></td>
+      </tr>
+    `).join('');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2200);
+  }
+
+  // Enter bilan ham qo'shish
+  document.getElementById('summa').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') qosh('kirim');
+  });
+
+  render();
+</script>
+
+<style>
+  @keyframes kirish {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+</body>
+</html>
